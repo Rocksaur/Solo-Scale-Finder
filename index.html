@@ -240,8 +240,8 @@ svg{max-width:100%;height:auto;display:block}
       <div class="promo-card panel">
         <h3 class="promo-title" id="coffeeTitle">개발자에게 커피 사주기</h3>
         <div class="promo-links promo-links-vertical">
-          <a class="promo-link promo-link-paypal" id="paypalLink" href="https://paypal.me/rocksaur/5USD" target="_blank" rel="noopener noreferrer">Paypal</a>
-          <a class="promo-link promo-link-kakaopay" id="kakaopayLink" href="https://qr.kakaopay.com/Ej7s8F11q9c403013" target="_blank" rel="noopener noreferrer">Kakaopay</a>
+          <a class="promo-link promo-link-paypal" id="paypalLink" href="https://paypal.me/rocksaur" target="_blank" rel="noopener noreferrer">Paypal</a>
+          <a class="promo-link promo-link-kakaopay" id="kakaopayLink" href="https://qr.kakaopay.com/Ej7s8F11q" target="_blank" rel="noopener noreferrer">Kakaopay</a>
         </div>
       </div>
     </div>
@@ -358,15 +358,16 @@ function renderBuilder(){const el=document.getElementById('builderGrid');el.inne
 }
 function barsFromBuilder(){const out=[];state.builderBars.forEach((bar,i)=>{const chords=[];[['slot1',bar.slot1],['slot2',bar.slot2]].forEach(([,slot])=>{if(slot.root!=='—'&&slot.quality){const rootPc=pcOf(slot.root);const ints=CHORD_INTERVALS[slot.quality]||[0,4,7];const chordPcs=uniq(ints.map(iv=>(rootPc+iv)%12));chords.push({raw:chordLabel(slot.root,slot.quality),root:slot.root,rootPc,quality:slot.quality,chordPcs})}}); if(chords.length) out.push({index:i,text:chords.map(c=>c.raw).join(' / '),chords})}); return out}
 function chordToneSet(bar){return uniq(bar.chords.flatMap(c=>c.chordPcs)).sort((a,b)=>a-b)}
-function getCandidateScalesForChord(chord){const out=[];const seen=new Map();const add=(transpose,name)=>{const meta=SCALE_LIBRARY.find(s=>s.name===name);if(!meta) return; const rootPc=(chord.rootPc+transpose+12)%12; const pcs=meta.intervals.map(i=>(rootPc+i)%12); const k=`${rootPc}-${meta.name}`; if(!seen.has(k)) seen.set(k,{rootPc,meta,pcs,name:`${pcName(rootPc)} ${meta.short}`,intervals:meta.intervals})};
+function getCandidateScalesForChord(chord){const out=[];const add=(transpose,name)=>{const meta=SCALE_LIBRARY.find(s=>s.name===name);if(!meta) return; const rootPc=(chord.rootPc+transpose+12)%12; out.push({rootPc,meta,pcs:meta.intervals.map(i=>(rootPc+i)%12),name:`${pcName(rootPc)} ${meta.short}`,intervals:meta.intervals})};
   switch(chord.quality){
-    case 'maj': case '6': case '6/9': case 'maj7': case 'maj9': add(0,'Ionian (Major)'); add(0,'Lydian'); add(0,'Mixolydian'); add(0,'Major Pentatonic'); add(0,'Bebop Major'); break;
+    case 'maj': case '6': case '6/9': add(0,'Ionian (Major)'); add(0,'Lydian'); add(0,'Mixolydian'); add(0,'Major Pentatonic'); add(0,'Bebop Major'); break;
+    case 'maj7': case 'maj9': add(0,'Ionian (Major)'); add(0,'Lydian'); add(0,'Mixolydian'); add(0,'Major Pentatonic'); add(0,'Bebop Major'); break;
     case 'maj7#11': add(0,'Lydian'); add(0,'Ionian (Major)'); add(0,'Mixolydian'); break;
     case 'm': case 'm6': case 'm7': case 'm9': case 'm11': add(0,'Dorian'); add(0,'Aeolian (Natural Minor)'); add(0,'Minor Pentatonic'); add(0,'Minor Blues'); add(0,'Phrygian'); add(0,'Melodic Minor'); add(0,'Harmonic Minor'); add(0,'Hirajoshi'); add(0,'In Scale (Japanese)'); break;
     case 'mMaj7': add(0,'Melodic Minor'); add(0,'Harmonic Minor'); break;
-    case '7': case '9': case '13': case '7sus4': add(0,'Mixolydian'); add(0,'Bebop Dominant'); add(0,'Lydian Dominant'); add(0,'Minor Pentatonic'); add(0,'Dominant Blues'); add(0,'Half-Whole Diminished'); add(0,'Phrygian Dominant'); add(0,'Whole Tone'); add(0,'Double Harmonic (Byzantine)'); add(0,'Altered (Super Locrian)'); break;
-    case '7b9': add(0,'Altered (Super Locrian)'); add(0,'Half-Whole Diminished'); add(0,'Phrygian Dominant'); add(0,'Mixolydian'); break;
-    case '7#9': case '7alt': add(0,'Altered (Super Locrian)'); add(0,'Half-Whole Diminished'); add(0,'Whole Tone'); add(0,'Minor Pentatonic'); add(0,'Dominant Blues'); break;
+    case '7': case '9': case '13': case '7sus4': add(0,'Mixolydian'); add(0,'Lydian Dominant'); add(0,'Bebop Dominant'); add(0,'Minor Pentatonic'); add(0,'Dominant Blues'); add(0,'Half-Whole Diminished'); add(0,'Phrygian Dominant'); add(0,'Whole Tone'); add(0,'Double Harmonic (Byzantine)'); add(0,'Altered (Super Locrian)'); break;
+    case '7b9': add(0,'Altered (Super Locrian)'); add(0,'Half-Whole Diminished'); add(0,'Phrygian Dominant'); add(0,'Mixolydian'); add(0,'Lydian Dominant'); break;
+    case '7#9': case '7alt': add(0,'Altered (Super Locrian)'); add(0,'Half-Whole Diminished'); add(0,'Whole Tone'); add(0,'Minor Pentatonic'); add(0,'Dominant Blues'); add(0,'Lydian Dominant'); break;
     case '7#11': add(0,'Lydian Dominant'); add(0,'Mixolydian'); add(0,'Whole Tone'); break;
     case '7b5': case '7#5': case 'aug': add(0,'Whole Tone'); add(0,'Altered (Super Locrian)'); add(0,'Lydian Dominant'); break;
     case 'm7b5': add(0,'Locrian'); add(0,'Locrian ♮2'); break;
@@ -375,14 +376,33 @@ function getCandidateScalesForChord(chord){const out=[];const seen=new Map();con
     case 'sus4': case 'sus2': add(0,'Mixolydian'); add(0,'Ionian (Major)'); add(0,'Major Pentatonic'); break;
     default: add(0,'Ionian (Major)'); add(0,'Dorian'); add(0,'Mixolydian');
   }
-  SCALE_LIBRARY.forEach(meta=>{const pcs=meta.intervals.map(i=>(chord.rootPc+i)%12); if(chord.chordPcs.every(pc=>pcs.includes(pc))){const k=`${chord.rootPc}-${meta.name}`; if(!seen.has(k)) seen.set(k,{rootPc:chord.rootPc,meta,pcs,name:`${pcName(chord.rootPc)} ${meta.short}`,intervals:meta.intervals})}});
-  return [...seen.values()].filter(s=>chord.chordPcs.every(pc=>s.pcs.includes(pc)))
+  for(const meta of SCALE_LIBRARY){
+    const pcs=meta.intervals.map(i=>(chord.rootPc+i)%12);
+    if(chord.chordPcs.every(pc=>pcs.includes(pc))) out.push({rootPc:chord.rootPc,meta,pcs,name:`${pcName(chord.rootPc)} ${meta.short}`,intervals:meta.intervals});
+  }
+  const u=new Map(); out.forEach(s=>{const k=`${s.rootPc}-${s.meta.name}`; if(!u.has(k)&&chord.chordPcs.every(pc=>s.pcs.includes(pc))) u.set(k,s)}); return [...u.values()]
 }
 function detectCenter(bars){const scores=[]; for(let tonic=0;tonic<12;tonic++){for(const scaleName of ['Ionian (Major)','Dorian','Aeolian (Natural Minor)','Lydian','Mixolydian','Melodic Minor']){const lib=SCALE_LIBRARY.find(s=>s.name===scaleName); const pcs=lib.intervals.map(i=>(tonic+i)%12); let fit=0; bars.forEach((bar,i)=>{const tones=chordToneSet(bar); const inCount=tones.filter(pc=>pcs.includes(pc)).length; fit+=inCount/Math.max(tones.length,1); if(i===0||i===bars.length-1) bar.chords.forEach(ch=>{if(ch.rootPc===tonic) fit+=.45})}); scores.push({name:`${pcName(tonic)} ${scaleName.replace(' (Natural Minor)','').replace(' (Major)','')}`,tonic,scaleName,fit})}} return scores.sort((a,b)=>b.fit-a.fit).slice(0,4)}
 function intervalDistance(a,b){let d=Math.abs(a-b)%12; return Math.min(d,12-d)}
 function functionalHint(prev,curr,next,centers){const hints=[]; if(prev&&prev.chords.length&&curr.chords.length){const p=prev.chords[prev.chords.length-1], c=curr.chords[0]; if((p.rootPc+5)%12===c.rootPc) hints.push('4th motion'); if(p.quality.startsWith('m')&&c.quality.includes('7')&&(p.rootPc+5)%12===c.rootPc) hints.push('ii-V motion')} if(next&&curr.chords.length&&next.chords.length){const c=curr.chords[curr.chords.length-1], n=next.chords[0]; if(c.quality.includes('7')&&intervalDistance(c.rootPc,n.rootPc)===5) hints.push('dominant resolution'); if(c.quality.includes('7')&&n.quality.includes('maj')&&(c.rootPc+5)%12===n.rootPc) hints.push('V-I')} if(centers[0]){const center=centers[0].tonic; curr.chords.forEach(ch=>{if(ch.rootPc===center) hints.push(`center ${pcName(center)}`)})} return uniq(hints)}
-function getBarScales(bars,barIndex,centers){const bar=bars[barIndex]; if(!bar) return []; const prev=bars[barIndex-1], next=bars[barIndex+1]; const base=[]; bar.chords.forEach(ch=>base.push(...getCandidateScalesForChord(ch))); const uniqMap=new Map(); base.forEach(s=>{const k=`${s.rootPc}-${s.meta.name}`; if(!uniqMap.has(k)) uniqMap.set(k,{...s})}); const curr=chordToneSet(bar), prevT=prev?chordToneSet(prev):[], nextT=next?chordToneSet(next):[], hints=functionalHint(prev,bar,next,centers); const scored=[...uniqMap.values()].map(scale=>{let score=0; const fit=curr.filter(pc=>scale.pcs.includes(pc)).length/Math.max(curr.length,1); score+=fit*5; score+=prevT.filter(pc=>scale.pcs.includes(pc)).length*.35+nextT.filter(pc=>scale.pcs.includes(pc)).length*.45; if(centers[0]){const centerLib=SCALE_LIBRARY.find(s=>s.name===centers[0].scaleName); const centerPcs=centerLib.intervals.map(i=>(centers[0].tonic+i)%12); score += scale.pcs.filter(pc=>centerPcs.includes(pc)).length*.2; const rel=(scale.rootPc-centers[0].tonic+12)%12; if(scale.rootPc===centers[0].tonic) score+=.5; if(rel===7&&scale.meta.name==='Mixolydian') score+=1.4; if(rel===5&&scale.meta.name==='Lydian') score+=1.1; if(rel===0&&scale.meta.name==='Ionian (Major)') score+=1.1; if([9,4,2].includes(rel)&&['Melodic Minor','Harmonic Minor','Dorian','Aeolian (Natural Minor)'].includes(scale.meta.name)) score+=.6}
-  if(bar.chords.some(ch=>['maj','6','6/9','maj7','maj9','maj7#11'].includes(ch.quality)&&ch.rootPc===scale.rootPc&&scale.meta.name==='Mixolydian')) score+=.9;
+function getBarScales(bars,barIndex,centers){const bar=bars[barIndex]; if(!bar) return []; const prev=bars[barIndex-1], next=bars[barIndex+1]; const base=[]; bar.chords.forEach(ch=>base.push(...getCandidateScalesForChord(ch))); const uniqMap=new Map(); base.forEach(s=>{const k=`${s.rootPc}-${s.meta.name}`; if(!uniqMap.has(k)) uniqMap.set(k,{...s})}); const curr=chordToneSet(bar), prevT=prev?chordToneSet(prev):[], nextT=next?chordToneSet(next):[], hints=functionalHint(prev,bar,next,centers); const scored=[...uniqMap.values()].map(scale=>{let score=0; const fit=curr.filter(pc=>scale.pcs.includes(pc)).length/Math.max(curr.length,1); score+=fit*5; score+=prevT.filter(pc=>scale.pcs.includes(pc)).length*.35+nextT.filter(pc=>scale.pcs.includes(pc)).length*.45; if(centers[0]){const centerLib=SCALE_LIBRARY.find(s=>s.name===centers[0].scaleName); const centerPcs=centerLib.intervals.map(i=>(centers[0].tonic+i)%12); score += scale.pcs.filter(pc=>centerPcs.includes(pc)).length*.2; if(scale.rootPc===centers[0].tonic) score+=.5; const rel=(scale.rootPc-centers[0].tonic+12)%12; if(rel===0&&scale.meta.name==='Ionian (Major)') score+=1.45; if(rel===0&&scale.meta.name==='Lydian') score+=.45; if(rel===5&&scale.meta.name==='Lydian') score+=1.55; if(rel===5&&scale.meta.name==='Ionian (Major)') score+=.35; if(rel===7&&scale.meta.name==='Mixolydian') score+=1.55; if(rel===7&&scale.meta.name==='Lydian Dominant') score+=1.25; if(rel===7&&scale.meta.name==='Altered (Super Locrian)') score+=.4; }
+  if(bar.chords.some(ch=>['maj7','maj9'].includes(ch.quality)&&ch.rootPc===scale.rootPc&&scale.meta.name==='Ionian (Major)')) score+=1.4;
+  if(bar.chords.some(ch=>['maj7','maj9'].includes(ch.quality)&&ch.rootPc===scale.rootPc&&scale.meta.name==='Lydian')) score+=.35;
+  if(bar.chords.some(ch=>['7','9','13','7sus4'].includes(ch.quality)&&ch.rootPc===scale.rootPc&&scale.meta.name==='Mixolydian')) score+=1.0;
+  if(bar.chords.some(ch=>['7','9','13','7#11','7sus4'].includes(ch.quality)&&ch.rootPc===scale.rootPc&&scale.meta.name==='Lydian Dominant')) score+=.95;
+  if(prev&&next&&bar.chords.some(ch=>['7','9','13','7#11','7sus4'].includes(ch.quality)&&ch.rootPc===scale.rootPc)){
+    const currChord=bar.chords[0];
+    const prevRoot=prev.chords.length?prev.chords[prev.chords.length-1].rootPc:null;
+    const nextRoot=next.chords.length?next.chords[0].rootPc:null;
+    if(nextRoot!==null&&((currChord.rootPc+5)%12===nextRoot || (currChord.rootPc+7)%12===nextRoot)){
+      if(scale.meta.name==='Mixolydian') score+=.75;
+      if(scale.meta.name==='Lydian Dominant') score+=.9;
+      if(scale.meta.name==='Altered (Super Locrian)') score+=.35;
+    }
+    if(prevRoot!==null&&((prevRoot+5)%12===currChord.rootPc) && nextRoot!==null&&((currChord.rootPc+5)%12===nextRoot)){
+      if(scale.meta.name==='Lydian Dominant') score+=.4;
+    }
+  }
   return {...scale,score,why:`${scale.meta.desc} · fit ${fit.toFixed(2)}${hints.length?' · '+hints.slice(0,2).join(' / '):''}`}}).sort((a,b)=>b.score-a.score); return scored.map((s,i)=>({...s,suggested:i<Math.min(2,scored.length)}))}
 function getSelectedScaleForBar(originalBuilderIdx){const stored=state.selectedScales[originalBuilderIdx]; if(!stored) return null; const bars=state.bars; const realIdx=bars.findIndex(b=>b.index===originalBuilderIdx); if(realIdx<0) return null; const scales=getBarScales(bars,realIdx,state.centers); return scales.find(s=>s.rootPc===stored.rootPc&&s.meta.name===stored.metaName)||null}
 function renderProgression(bars,selected){const view=document.getElementById('progressionView'); view.innerHTML=''; bars.forEach((bar,i)=>{const stored=state.selectedScales[bar.index]; const scaleTxt=stored?`${t('selectedScale')}: ${pcName(stored.rootPc)} ${SCALE_LIBRARY.find(s=>s.name===stored.metaName)?.short||stored.metaName}`:''; const el=document.createElement('div'); el.className='bar'+(i===selected?' active':''); el.innerHTML=`<div class="bar-index">${i+1} ${t('bar')}</div><div class="bar-chord">${bar.text}</div><div class="bar-meta">${bar.chords.map(c=>c.quality).join(' / ')}</div><div class="bar-scale">${scaleTxt}</div>`; el.onclick=()=>{state.selectedBar=i; refreshView()}; view.appendChild(el)})}
